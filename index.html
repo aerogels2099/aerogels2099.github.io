@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Thomas Liu — Software Developer</title>
+<meta name="description" content="Yu Hin (Thomas) Liu — Computer Science at NYU. Full-stack development, machine learning, and software systems.">
+<meta name="author" content="Yu Hin (Thomas) Liu">
+<meta name="theme-color" content="#060A10">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<!-- Social cards. If you move to a custom domain, update these absolute URLs to match. -->
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://aerogels2099.github.io/">
+<meta property="og:title" content="Thomas Liu — Software Developer">
+<meta property="og:description" content="Computer science at NYU Tandon, building across the stack — backend services, ML models, and the real-time systems that tie them together.">
+<meta property="og:image" content="https://aerogels2099.github.io/assets/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Thomas Liu — Software Developer">
+<meta name="twitter:description" content="Computer science at NYU Tandon, building across the stack — backend services, ML models, and real-time systems.">
+<meta name="twitter:image" content="https://aerogels2099.github.io/assets/og.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Instrument+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<div id="boot" role="presentation">
+  <div class="boot-box">
+    <div class="ln">&gt; init <b>T.LIU</b> portfolio_v2</div>
+    <div class="ln">&gt; loading telemetry ........ <span class="ok">OK</span></div>
+    <div class="ln">&gt; calibrating instruments .. <span class="ok">OK</span></div>
+    <div class="ln">&gt; <b>signal locked</b></div>
+    <div class="boot-bar"><i></i></div>
+  </div>
+</div>
+
+<canvas id="field" aria-hidden="true"></canvas>
+<div class="aurora" id="aurora" aria-hidden="true"></div>
+<div class="layer" id="clouds" aria-hidden="true"></div>
+<div class="layer" id="city" aria-hidden="true"><div class="grid"></div><div class="haze"></div></div>
+<div class="vignette" aria-hidden="true"></div>
+<div class="scanlines" aria-hidden="true"></div>
+<div id="progress" aria-hidden="true"></div>
+<div id="cursor" aria-hidden="true"></div>
+<div id="hud" aria-hidden="true"><span class="ret">⌖</span><span id="hudText">weapons hot · fire at asteroids</span><span>cleared <b id="score">000</b></span><span class="hint">click empty space to fire</span></div>
+
+<nav>
+  <div class="nav-inner">
+    <a class="nav-mark" href="#top"><span class="dot"></span>T.LIU</a>
+    <div class="nav-links">
+      <a href="#experience">experience</a>
+      <a href="#projects">projects</a>
+      <a href="#skills">skills</a>
+      <a href="#education">education</a>
+      <a href="#contact">contact</a>
+    </div>
+  </div>
+</nav>
+
+<header id="top">
+  <div class="wrap">
+    <div class="eyebrow">Yu Hin (Thomas) Liu · Software Developer <span class="blink">●</span></div>
+    <h1>
+      <span class="word"><span style="animation-delay:1.55s">Software,</span></span>
+      <span class="word"><span style="animation-delay:1.65s">end</span></span><br>
+      <span class="word"><span style="animation-delay:1.75s">to</span></span>
+      <span class="word"><span style="animation-delay:1.85s"><em>end.</em></span></span>
+    </h1>
+    <p class="hero-sub">
+      Computer science student at <strong>NYU Tandon</strong> building across the stack — backend
+      services and APIs, machine-learning models, and the real-time systems that tie them
+      together. Creating software that gets <strong>shipped</strong>, not just written.
+    </p>
+    <div class="readouts">
+      <div class="readout"><div class="k">Location</div><div class="v">New York · Toronto</div></div>
+      <div class="readout"><div class="k">Focus</div><div class="v">Full-Stack · ML · Systems</div></div>
+      <div class="readout"><div class="k">Studying</div><div class="v">B.S. CS · NYU '29</div></div>
+      <div class="readout"><div class="k">Contact</div><div class="v"><a href="mailto:yl13534@nyu.edu">yl13534@nyu.edu</a></div></div>
+    </div>
+    <div class="hero-links" aria-label="Profiles and resume">
+      <a class="hlink" href="https://github.com/aerogels2099" target="_blank" rel="noopener noreferrer">GitHub<span class="arr" aria-hidden="true">↗</span></a>
+      <a class="hlink" href="https://www.linkedin.com/in/thomas-liu-0a499b267/" target="_blank" rel="noopener noreferrer">LinkedIn<span class="arr" aria-hidden="true">↗</span></a>
+      <a class="hlink" href="assets/Thomas-Liu-Resume.pdf" target="_blank" rel="noopener">Resume<span class="arr" aria-hidden="true">↗</span></a>
+    </div>
+  </div>
+  <div class="gitgraph" id="signalBand" aria-hidden="true">
+    <canvas class="git-canvas"></canvas>
+  </div>
+  <div class="ticker" aria-hidden="true">
+    <div class="ticker-track" id="tickerTrack">
+      <span><i>◆</i>REST APIs</span><span><i>◆</i>PyTorch</span><span><i>◆</i>C++</span>
+      <span><i>◆</i>Stream Processing</span><span><i>◆</i>PostgreSQL</span><span><i>◆</i>Docker</span>
+      <span><i>◆</i>FastAPI</span><span><i>◆</i>React</span><span><i>◆</i>Computer Vision</span>
+      <span><i>◆</i>Git / GitHub</span><span><i>◆</i>Neural Networks</span><span><i>◆</i>Full-Stack</span>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <section id="experience">
+    <div class="sec-head reveal">
+      <span class="tag">log / 01</span>
+      <h2>Experience</h2>
+      <span class="rule"></span>
+    </div>
+
+    <article class="entry reveal">
+      <div class="meta">
+        <div class="when">May 2026 → Aug 2026</div>
+        <div>Vaughan, ON</div>
+      </div>
+      <div>
+        <h3>Martinrea International</h3>
+        <div class="role">Software Developer Intern</div>
+        <p>Built <strong>PULSE</strong>, an industrial IoT application that streams live machine
+        production data to a central server for real-time monitoring. Engineered C++ and Python
+        ingestion pipelines with eKuiper stream processing and PostgreSQL telemetry storage,
+        surfaced everything on a responsive web dashboard over REST/JSON, and containerized the
+        services with Docker for reproducible deployments.</p>
+        <div class="stack">
+          <span class="chip">C++</span><span class="chip">Python</span><span class="chip">eKuiper</span>
+          <span class="chip">PostgreSQL</span><span class="chip">Docker</span><span class="chip">REST APIs</span>
+        </div>
+      </div>
+    </article>
+
+    <article class="entry reveal d1">
+      <div class="meta">
+        <div class="when">Apr 2024 → Oct 2024</div>
+        <div>Toronto, ON</div>
+      </div>
+      <div>
+        <h3>University of Toronto</h3>
+        <div class="role">Research Assistant · Leading Tomorrow</div>
+        <p>Worked with Professor Tao Wang analyzing demographic datasets in Python to study social
+        trends in education. Designed surveys and conducted 300+ interviews, producing 500+
+        documented responses with thorough reporting.</p>
+        <div class="stack">
+          <span class="chip">Python</span><span class="chip">Data Analysis</span><span class="chip">Research Design</span>
+        </div>
+      </div>
+    </article>
+
+    <article class="entry reveal d2">
+      <div class="meta">
+        <div class="when">May 2023 → Jun 2024</div>
+        <div>Toronto, ON</div>
+      </div>
+      <div>
+        <h3>Codebuds</h3>
+        <div class="role">Co-Founder &amp; Technical Lead</div>
+        <p>Led end-to-end development of the organization's platform, building modular backend
+        systems for course and event management that served <strong>10,000+ users</strong>.
+        Maintained release processes and coding standards through Git, and translated business
+        requirements into scalable technical solutions across technical and non-technical teams.</p>
+        <div class="stack">
+          <span class="chip">Full-Stack</span><span class="chip">Backend Systems</span><span class="chip">Git</span><span class="chip">Team Leadership</span>
+        </div>
+      </div>
+    </article>
+
+    <div class="counters reveal">
+      <div class="counter">
+        <div class="num"><span data-count="10000">0</span><sup>+</sup></div>
+        <div class="lbl">Users served</div>
+        <div class="ctx">Codebuds' course &amp; event platform — built and shipped end-to-end.</div>
+      </div>
+      <div class="counter">
+        <div class="num"><span data-count="300">0</span><sup>+</sup></div>
+        <div class="lbl">Interviews conducted</div>
+        <div class="ctx">Field research on education trends at the University of Toronto.</div>
+      </div>
+      <div class="counter">
+        <div class="num"><span data-count="500">0</span><sup>+</sup></div>
+        <div class="lbl">Survey responses</div>
+        <div class="ctx">Collected, documented, and analyzed in Python for that study.</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="projects">
+    <div class="sec-head reveal">
+      <span class="tag">log / 02</span>
+      <h2>Projects</h2>
+      <span class="rule"></span>
+    </div>
+
+    <div class="proj-grid">
+      <article class="proj reveal tilt">
+        <div class="proj-inner">
+          <div class="pid">Feb – Apr 2026 · NYU Tandon</div>
+          <h3>SkinSense Smart Mirror</h3>
+          <p>Raspberry Pi 4B smart mirror with a self-rotating camera for AI-powered skin analysis.
+          Designed voltage-divider circuits and PCB layouts, modeled hardware in Fusion 360 for 3D
+          printing, and tested real-time computer-vision pipelines in Python.</p>
+          <div class="spec" aria-hidden="true"></div>
+          <div class="stack">
+            <span class="chip">Raspberry Pi</span><span class="chip">Python</span><span class="chip">CV</span><span class="chip">Fusion 360</span>
+          </div>
+        </div>
+      </article>
+
+      <article class="proj reveal d1 tilt">
+        <div class="proj-inner">
+          <div class="pid">Nov 2025 – Present · Independent</div>
+          <h3>Instrument Detection System</h3>
+          <p>PyTorch CNN for multi-label instrument classification from Mel-spectrogram features,
+          deployed end to end with a FastAPI backend and React frontend, plus a reproducible
+          evaluation and experimentation pipeline.</p>
+          <div class="spec" aria-hidden="true"></div>
+          <div class="stack">
+            <span class="chip">PyTorch</span><span class="chip">CNN</span><span class="chip">FastAPI</span><span class="chip">React</span>
+          </div>
+          <div class="proj-links">
+            <a href="https://github.com/aerogels2099/InstrumentDetection" target="_blank" rel="noopener noreferrer">Repository<span class="arr" aria-hidden="true">↗</span></a>
+          </div>
+        </div>
+      </article>
+
+      <article class="proj reveal d2 tilt">
+        <div class="proj-inner">
+          <div class="pid">Jul – Aug 2024 · U of T</div>
+          <h3>CREATE Summer Program</h3>
+          <p>Led a team analyzing urban and renewable-energy datasets, running the full data
+          pipeline from collection through modeling with Pandas and scikit-learn for data-driven
+          problem-solving.</p>
+          <div class="spec" aria-hidden="true"></div>
+          <div class="stack">
+            <span class="chip">Pandas</span><span class="chip">scikit-learn</span><span class="chip">Team Lead</span>
+          </div>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section id="skills">
+    <div class="sec-head reveal">
+      <span class="tag">log / 03</span>
+      <h2>Technical Skills</h2>
+      <span class="rule"></span>
+    </div>
+
+    <div class="skill-rows reveal">
+      <div class="skill-row">
+        <div class="k">Languages</div>
+        <div class="vals">
+          <span class="chip">Python</span><span class="chip">C++</span><span class="chip">Java</span>
+          <span class="chip">C#</span><span class="chip">JavaScript</span><span class="chip">HTML/CSS</span>
+        </div>
+      </div>
+      <div class="skill-row">
+        <div class="k">AI / ML</div>
+        <div class="vals">
+          <span class="chip">PyTorch</span><span class="chip">TensorFlow</span><span class="chip">scikit-learn</span>
+          <span class="chip">Neural Networks</span><span class="chip">Model Development</span>
+        </div>
+      </div>
+      <div class="skill-row">
+        <div class="k">Development</div>
+        <div class="vals">
+          <span class="chip">FastAPI</span><span class="chip">Flask</span><span class="chip">REST APIs</span>
+          <span class="chip">Docker</span><span class="chip">eKuiper</span><span class="chip">Git/GitHub</span><span class="chip">SDLC</span>
+        </div>
+      </div>
+      <div class="skill-row">
+        <div class="k">Data &amp; Web</div>
+        <div class="vals">
+          <span class="chip">PostgreSQL</span><span class="chip">MySQL</span><span class="chip">React.js</span>
+          <span class="chip">Tailwind CSS</span><span class="chip">Pandas</span><span class="chip">NumPy</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="education">
+    <div class="sec-head reveal">
+      <span class="tag">log / 04</span>
+      <h2>Education</h2>
+      <span class="rule"></span>
+    </div>
+
+    <div class="edu reveal">
+      <div>
+        <h3>New York University</h3>
+        <div class="deg">Bachelor of Science in Computer Science</div>
+        <div class="coursework">
+          <span class="ck">Relevant coursework</span>
+          <div class="course-chips">
+            <span class="chip">Object-Oriented Programming</span>
+            <span class="chip">Data Structures &amp; Algorithms</span>
+            <span class="chip">Calculus II</span>
+          </div>
+        </div>
+      </div>
+      <div class="meta">
+        <div>New York, NY</div>
+        <div class="hl">Class of 2029</div>
+        <div>GPA 3.5 / 4.0</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="contact" class="contact">
+    <h2 class="reveal">Let's build something<br>worth <em>monitoring.</em></h2>
+    <p class="reveal d1">Open to software engineering and machine-learning opportunities.</p>
+    <div class="cta-row reveal d2">
+      <a class="btn primary" href="mailto:yl13534@nyu.edu">yl13534@nyu.edu</a>
+      <a class="btn ghost" href="mailto:thomas.liu887@gmail.com">thomas.liu887@gmail.com</a>
+      <a class="btn ghost" href="https://github.com/aerogels2099" target="_blank" rel="noopener noreferrer">GitHub</a>
+      <a class="btn ghost" href="https://www.linkedin.com/in/thomas-liu-0a499b267/" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+      <a class="btn ghost" href="assets/Thomas-Liu-Resume.pdf" target="_blank" rel="noopener">Resume</a>
+    </div>
+  </section>
+
+</main>
+
+<div class="dirt-band" id="dirtBand">
+  <footer>
+    <span>© 2026 Yu Hin (Thomas) Liu</span>
+    <span>NEW YORK · TORONTO — <span class="ok">DEPTH: BEDROCK · SIGNAL NOMINAL</span></span>
+  </footer>
+</div>
+
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
