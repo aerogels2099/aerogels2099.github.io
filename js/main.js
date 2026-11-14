@@ -127,22 +127,35 @@ const t0 = performance.now();
 /* the pointer carries a warm spot over the terrain: lines near it lift a
    little and take on the accent colour, fading back to white on either side */
 let px = 0, py = 0, pk = 0, ptx = 0, pty = 0, pkTarget = 0;
+/* On narrow screens the hero and contact text fill the whole viewport, so the
+   terrain can't sit behind them. It is anchored in page coordinates just below
+   each block of links instead and scrolls in underneath. These hold those
+   anchors (bottom of the links, in px from the top of the page). */
+let anchorHero = 0, anchorEnd = 0;
+const docBottom = el => { let y = el.offsetHeight; for (let n = el; n; n = n.offsetParent) y += n.offsetTop; return y; };
 
 function drawRidge(t) {
   rctx.clearRect(0, 0, W, H);
-  const vis = Math.max(1 - heroP, endQ * 0.6);
+  const narrow = W < 760;
+  /* desktop: fade/flatten as soon as the hero scrolls; narrow: only once the
+     terrain itself has scrolled above mid-screen */
+  const p = narrow ? clamp((scrollY - Math.max(0, anchorHero - H * 0.5)) / (H * 0.7)) : heroP;
+  const vis = Math.max(1 - p, endQ * 0.6);
   if (vis < 0.01) return false;
   const intro = reduced ? 1 : 1 - Math.pow(1 - clamp((performance.now() - t0) / 2200), 3);
-  const ampK = Math.max(Math.pow(1 - heroP, 1.5), endQ * 0.7) * intro;
-  const yOff = endQ > 0 ? 0 : -heroP * H * 0.18;
-  const narrow = W < 760;
+  const ampK = Math.max(Math.pow(1 - p, 1.5), endQ * 0.7) * intro;
+  const amp = H * (narrow ? 0.16 : 0.24), span = H * (narrow ? 0.3 : 0.4);
+  /* the tallest peaks reach about 0.32·amp above the first line, so offset by that */
+  const top0 = narrow
+    ? (endQ > 0 ? anchorEnd : anchorHero) + 20 + 0.32 * amp - scrollY
+    : H * 0.66 + (endQ > 0 ? 0 : -heroP * H * 0.18);
   const cx = W * (narrow ? 0.5 : 0.72), sig = W * (narrow ? 0.3 : 0.18);
   const n = Math.floor(W / STEP) + 2;
 
   for (let i = 0; i < LINES; i++) {
     const f = i / (LINES - 1);
-    const base = H * (0.66 + 0.4 * Math.pow(f, 1.5)) + yOff;
-    const a = H * 0.24 * ampK * (0.35 + 0.65 * f);
+    const base = top0 + span * Math.pow(f, 1.5);
+    const a = amp * ampK * (0.35 + 0.65 * f);
     const near = pk * Math.exp(-(((base - py) / (H * 0.1)) ** 2));   // how close this line is to the pointer
     for (let j = 0; j < n; j++) {
       const x = j * STEP;
@@ -387,6 +400,8 @@ function resize() {
   rctx.setTransform(DPR, 0, 0, DPR, 0, 0);
   ys = new Float32Array(Math.floor(W / STEP) + 2);
   waves.forEach(fit); figs.forEach(fit);
+  anchorHero = docBottom(document.querySelector('.hero .links'));
+  anchorEnd = docBottom(document.querySelector('.contact .links'));
   wavesDirty = true;
   readScroll();
   kick();
@@ -423,6 +438,7 @@ function kick() {
 
 addEventListener('scroll', () => { readScroll(); kick(); }, { passive: true });
 addEventListener('resize', resize);
+document.fonts?.ready.then(resize);   // web fonts change line wrapping, which moves the anchors
 document.addEventListener('visibilitychange', () => { if (!document.hidden) kick(); });
 resize();
 for (const f of figs) figIO.observe(f.cv);

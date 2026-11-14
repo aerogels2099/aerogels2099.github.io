@@ -94,6 +94,15 @@ nav a:hover,nav a.on{color:var(--ink)}
   filter:blur(calc(var(--p,0) * 14px));
   transform-origin:30% 0;
 }
+/* narrow screens: the text fills the viewport, so the terrain gets its own band
+   below the links (js/main.js anchors it there) and the text no longer sinks
+   into it while scrolling */
+@media(max-width:759.98px){
+  .hero{min-height:0;padding:112px 0 calc(36svh + 24px)}
+  .hero .wrap{transform:scale(calc(1 - var(--p,0) * .06))}
+  .contact{min-height:0}
+  .contact > .wrap{padding-bottom:30svh}
+}
 .kicker{font-size:14px;color:var(--soft)}
 h1{font-family:var(--serif);font-weight:400;
   font-size:clamp(52px,9.4vw,128px);line-height:.98;letter-spacing:-.02em;margin-top:18px}
@@ -149,8 +158,9 @@ h2{font-family:var(--serif);font-weight:400;font-size:clamp(44px,7vw,84px);line-
 
 /* ---- experience timeline: 2023 → 2027, one bar per role ---- */
 .timeline{position:relative;height:132px;margin:18px 0 20px;
-  background:linear-gradient(90deg,var(--line) 1px,transparent 1px) 0 0/25% calc(100% - 26px) repeat-x;
-  border-right:1px solid var(--line)}
+  background:linear-gradient(90deg,var(--line) 1px,transparent 1px) 0 0/25% calc(100% - 26px) repeat-x}
+/* closing 2027 gridline, stopped at the axis so it doesn't run through the year labels */
+.timeline::after{content:"";position:absolute;right:0;top:0;bottom:26px;border-right:1px solid var(--line)}
 .tl-bar{position:absolute;left:var(--l);width:var(--w);top:calc(var(--row) * 32px + 6px);height:26px}
 .tl-bar span{display:block;font-size:12px;line-height:16px;color:var(--soft);white-space:nowrap;transition:color .3s}
 .tl-bar::after{content:"";position:absolute;left:0;right:0;bottom:0;height:5px;border-radius:3px;
@@ -169,6 +179,11 @@ h2{font-family:var(--serif);font-weight:400;font-size:clamp(44px,7vw,84px);line-
 .tl-axis span:nth-child(3){left:50%;transform:translateX(-50%)}
 .tl-axis span:nth-child(4){left:75%;transform:translateX(-50%)}
 .tl-axis span:nth-child(5){right:0}
+/* phones: two-digit years so the right edge isn't crowded */
+@media(max-width:680px){
+  .tl-axis span{font-size:0}
+  .tl-axis span::after{content:attr(data-s);font-size:11.5px}
+}
 .item.hot h3{color:var(--accent)}
 .item h3{transition:transform .5s var(--ease),color .3s}
 
