@@ -1,5 +1,5 @@
 /* Motion for the page, in six parts:
-   1. reveals   – blocks resolve out of blur, heading letters rise out of a mask
+   1. reveals   – blocks fade and rise in, heading letters rise out of a mask
    2. scroll    – hero recedes, nav / section marker follow the current section
    3. ridge     – the signal terrain behind the hero (and again at the end)
    4. waves     – section dividers that ring with scroll speed
@@ -9,7 +9,12 @@ const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const canHover = matchMedia('(hover:hover)').matches;
 const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
 const $$ = s => [...document.querySelectorAll(s)];
-const DPR = Math.min(devicePixelRatio || 1, 2);
+/* "lite" mode trades polish for frame rate: lower canvas resolution, a coarser
+   terrain, no blur or blend effects. It starts on for low-memory / low-core
+   devices and switches on by itself if the page is measured running slowly. */
+let lite = (navigator.deviceMemory || 8) <= 4 || (navigator.hardwareConcurrency || 8) <= 2;
+let DPR = lite ? 1 : Math.min(devicePixelRatio || 1, 2);
+if (lite) document.documentElement.classList.add('lite');
 const accent = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim();
 const accentRGB = [1, 3, 5].map(i => parseInt(accent.slice(i, i + 2), 16)).join(',');
 
@@ -88,31 +93,36 @@ const marker = document.getElementById('marker');
 const [mNum, mName] = marker.children;
 const sections = $$('main section');
 const skills = document.getElementById('skills');
-const inverter = skills.querySelector('.invert');
+const disc = skills.querySelector('.invert i');
+const DISC_R = 300;   // radius of the disc element in px (see .invert i in styles.css)
+/* layout is measured once per resize, not on every scroll */
+let secTops = [], skTop = 0, skH = 0, skHyp = 0, docH = 0, scrollDirty = false;
 const links = $$('.nav-links a');
 
 let heroP = 0, endQ = 0, current = null, lastY = scrollY, vel = 0, energy = 0, swapTimer = 0;
 
 function readScroll() {
   const y = scrollY, vh = innerHeight;
-  const maxY = document.documentElement.scrollHeight - vh;
+  const maxY = docH - vh;
   heroP = clamp(y / (vh * 0.9));
   endQ = clamp(1 - (maxY - y) / (vh * 0.8));
   if (!reduced) hero.style.setProperty('--p', heroP.toFixed(3));
   nav.classList.toggle('solid', y > vh * 0.6);
 
-  /* skills inversion: the circle opens as the section rises into view and
-     closes again as it leaves, centred on the middle of the screen */
+  /* skills panel: a grey disc opens behind the section as it rises into view
+     and closes again as it leaves, centred on the middle of the screen. It is
+     moved with transform only, so the browser never repaints it. */
   if (!reduced) {
-    const st = skills.offsetTop - y, sh = skills.offsetHeight;
-    let k = Math.min(clamp((vh * 0.62 - st) / (vh * 0.6)), clamp((st + sh - vh * 0.38) / (vh * 0.6)));
-    k = k * k;
-    inverter.style.setProperty('--ir', (k * Math.hypot(skills.offsetWidth, sh)).toFixed(1) + 'px');
-    inverter.style.setProperty('--iy', clamp(vh / 2 - st, 0, sh).toFixed(1) + 'px');
+    const st = skTop - y;
+    if (st < vh && st + skH > 0) {
+      let k = Math.min(clamp((vh * 0.62 - st) / (vh * 0.6)), clamp((st + skH - vh * 0.38) / (vh * 0.6)));
+      k = k * k;
+      disc.style.transform = `translate(-50%,${(clamp(vh / 2 - st, 0, skH) - DISC_R).toFixed(1)}px) scale(${(k * skHyp / DISC_R).toFixed(3)})`;
+    }
   }
 
   let now = -1;
-  sections.forEach((s, i) => { if (s.offsetTop - y <= vh * 0.45) now = i; });
+  for (let i = 0; i < secTops.length; i++) if (secTops[i] - y <= vh * 0.45) now = i;
   if (y >= maxY - 2) now = sections.length - 1;
   if (now !== current) {
     current = now;
@@ -133,8 +143,8 @@ function readScroll() {
 /* ---------- 3. ridge ---------- */
 const ridge = document.getElementById('ridge');
 const rctx = ridge.getContext('2d');
-const LINES = 30, STEP = 6, ACCENT_LINE = 21;
-let W = 0, H = 0, ys = new Float32Array(0);
+let LINES = lite ? 22 : 30, STEP = lite ? 10 : 6;
+let W = 0, H = 0, ys = new Float32Array(0), env = new Float32Array(0);
 const t0 = performance.now();
 /* the pointer carries a warm spot over the terrain: lines near it lift a
    little and take on the accent colour, fading back to white on either side */
@@ -161,8 +171,7 @@ function drawRidge(t) {
   const top0 = narrow
     ? (endQ > 0 ? anchorEnd : anchorHero) + 20 + 0.32 * amp - scrollY
     : H * 0.66 + (endQ > 0 ? 0 : -heroP * H * 0.18);
-  const cx = W * (narrow ? 0.5 : 0.72), sig = W * (narrow ? 0.3 : 0.18);
-  const n = Math.floor(W / STEP) + 2;
+  const n = ys.length, ACCENT_LINE = Math.round(LINES * 0.72);
 
   for (let i = 0; i < LINES; i++) {
     const f = i / (LINES - 1);
@@ -171,12 +180,11 @@ function drawRidge(t) {
     const near = pk * Math.exp(-(((base - py) / (H * 0.1)) ** 2));   // how close this line is to the pointer
     for (let j = 0; j < n; j++) {
       const x = j * STEP;
-      const env = Math.exp(-(((x - cx) / sig) ** 2));
       const n1 = noise(x * 0.006 + i * 0.13, i * 0.31 - t * 0.22);
       const n2 = noise(x * 0.022, i * 1.7 + t * 0.5);
-      ys[j] = base - a * (env * 0.95 * (n1 * 0.75 + n2 * 0.25) + 0.035 * n2)
-        - near * 26 * Math.exp(-(((x - px) / 130) ** 2));
+      ys[j] = base - a * (env[j] * 0.95 * (n1 * 0.75 + n2 * 0.25) + 0.035 * n2);
     }
+    if (near > 0.03) for (let j = 0; j < n; j++) ys[j] -= near * 26 * Math.exp(-(((j * STEP - px) / 130) ** 2));
     /* black fill under each line hides the lines behind it */
     rctx.beginPath(); rctx.moveTo(0, ys[0]);
     for (let j = 1; j < n; j++) rctx.lineTo(j * STEP, ys[j]);
@@ -424,23 +432,46 @@ function fit(o) {
   o.cv.width = o.w * DPR; o.cv.height = o.h * DPR;
   o.ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
 }
-function resize() {
+function resize(force) {
+  /* phones fire resize whenever the address bar slides in or out while
+     scrolling; rebuilding every canvas for that causes a visible hitch */
+  if (force !== true && innerWidth === W && Math.abs(innerHeight - H) < H * 0.15) return;
   W = innerWidth; H = innerHeight;
-  ridge.width = W * DPR; ridge.height = H * DPR;
-  rctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-  ys = new Float32Array(Math.floor(W / STEP) + 2);
+  /* the terrain is full-screen and mostly overdraw, so it gets a lower pixel ratio */
+  const rd = Math.min(DPR, 1.5);
+  ridge.width = W * rd; ridge.height = H * rd;
+  rctx.setTransform(rd, 0, 0, rd, 0, 0);
+  const n = Math.floor(W / STEP) + 2, narrow = W < 760;
+  const cx = W * (narrow ? 0.5 : 0.72), sig = W * (narrow ? 0.3 : 0.18);
+  ys = new Float32Array(n); env = new Float32Array(n);
+  for (let j = 0; j < n; j++) env[j] = Math.exp(-(((j * STEP - cx) / sig) ** 2));
   waves.forEach(fit); figs.forEach(fit);
   marqHalf = track.scrollWidth / 2 || 1;
   anchorHero = docBottom(document.querySelector('.hero .links'));
   anchorEnd = docBottom(document.querySelector('.contact .links'));
+  secTops = sections.map(el => el.offsetTop);
+  skTop = skills.offsetTop; skH = skills.offsetHeight; skHyp = Math.hypot(skills.offsetWidth, skH);
+  docH = document.documentElement.scrollHeight;
   wavesDirty = true;
   readScroll();
   kick();
 }
+function goLite() {
+  lite = true; DPR = 1; LINES = 22; STEP = 10;
+  document.documentElement.classList.add('lite');
+  resize(true);
+}
 
-let running = false, prev = 0;
+let running = false, prev = 0, tick = 0, slowSum = 0, slowN = 0, ridgeLive = false, figsLive = false;
 function frame(now) {
-  const dt = Math.min((now - prev) / 1000, 0.05); prev = now;
+  const dt = Math.min((now - prev) / 1000, 0.05);
+  /* measure real frame time in windows of 90 frames; under ~40fps, drop to lite */
+  if (!lite && !reduced) {
+    slowSum += Math.min(now - prev, 100);
+    if (++slowN === 90) { if (slowSum / 90 > 25) goLite(); slowSum = slowN = 0; }
+  }
+  prev = now;
+  if (scrollDirty) { scrollDirty = false; readScroll(); }
   const y = scrollY;
   vel += ((y - lastY) - vel) * 0.3; lastY = y;
   energy += (clamp(Math.abs(vel) / 45) - energy) * 0.12;
@@ -449,8 +480,12 @@ function frame(now) {
   pk += (pkTarget - pk) * 0.07; px += (ptx - px) * 0.14; py += (pty - py) * 0.14;
 
   const t = (now - t0) / 1000;
-  const ridgeLive = drawRidge(t);
-  const figsLive = drawFigs(t);
+  /* the canvases drift slowly, so they are redrawn at half rate (a third in
+     lite); the terrain keeps full rate on phones while scrolling, where it is
+     pinned to the page and would otherwise judder against the text */
+  const due = tick++ % (lite ? 3 : 2) === 0;
+  if (due || (W < 760 && energy > 0)) ridgeLive = drawRidge(t);
+  if (due) figsLive = drawFigs(t);
   const ringing = waves.some(wv => wv.plucks.length);
   if (energy > 0 || wavesDirty || ringing) {
     wavesDirty = false;
@@ -480,9 +515,11 @@ function kick() {
   requestAnimationFrame(frame);
 }
 
-addEventListener('scroll', () => { readScroll(); kick(); }, { passive: true });
+/* scroll only flags work for the next frame, so several scroll events in one
+   frame cost a single update */
+addEventListener('scroll', () => { scrollDirty = true; kick(); }, { passive: true });
 addEventListener('resize', resize);
-document.fonts?.ready.then(resize);   // web fonts change line wrapping, which moves the anchors
+document.fonts?.ready.then(() => resize(true));   // web fonts change line wrapping, which moves the anchors
 document.addEventListener('visibilitychange', () => { if (!document.hidden) kick(); });
-resize();
+resize(true);
 for (const f of figs) figIO.observe(f.cv);

@@ -4,6 +4,7 @@
   --soft:#A3A19C;
   --dim:#6E6C68;
   --accent:#FFFFFF;
+  --panel:#1D1D1D;
   --line:rgba(255,255,255,.12);
   --serif:'Instrument Serif', Georgia, serif;
   --sans:'Instrument Sans', -apple-system, 'Segoe UI', sans-serif;
@@ -77,14 +78,16 @@ nav a:hover,nav a.on{color:var(--ink)}
 .marquee span:nth-child(odd){color:transparent;-webkit-text-stroke:1px rgba(255,255,255,.8)}
 .marquee span:nth-child(even){font-style:italic}
 
-/* the skills section flips to black-on-white: a white layer in difference
-   blend inverts everything beneath it, and it opens as a circle driven by
-   scroll (--ir radius, --iy centre, set in js/main.js) */
-#skills{position:relative;margin-top:clamp(64px,11vh,120px);padding-bottom:clamp(72px,13vh,130px)}
-.invert{position:absolute;inset:0;background:#fff;mix-blend-mode:difference;pointer-events:none;
-  clip-path:circle(var(--ir,150%) at 50% var(--iy,50%))}
+/* the skills section sits on a dark grey panel that opens as a disc behind
+   the text, driven by scroll (js/main.js scales and moves the disc). Without
+   JS or with reduced motion the whole panel is simply grey. */
+#skills{position:relative;isolation:isolate;margin-top:clamp(64px,11vh,120px);padding-bottom:clamp(72px,13vh,130px)}
+.invert{position:absolute;inset:0;z-index:-1;overflow:hidden;pointer-events:none;background:var(--panel)}
+.js .invert{background:none}
+.js .invert i{position:absolute;left:50%;top:0;width:600px;height:600px;border-radius:50%;
+  background:var(--panel);transform:translate(-50%,0) scale(0);will-change:transform}
 
-.marker{position:fixed;left:28px;bottom:26px;z-index:9;font-size:13px;color:var(--soft);mix-blend-mode:difference;
+.marker{position:fixed;left:28px;bottom:26px;z-index:9;font-size:13px;color:var(--soft);
   display:flex;gap:10px;overflow:hidden;opacity:0;transition:opacity .4s}
 .marker.show{opacity:1}
 .marker span{display:block;transition:transform .3s var(--ease),opacity .3s}
@@ -110,12 +113,12 @@ nav a:hover,nav a.on{color:var(--ink)}
 
 /* ---- hero ---- */
 .hero{min-height:100svh;padding:clamp(120px,19vh,190px) 0 40px}
-/* --p is scroll progress through the hero: it sinks, shrinks and defocuses
-   while the next section rises over it */
+/* --p is scroll progress through the hero: it sinks, shrinks and fades
+   while the next section rises over it (transform and opacity only, so the
+   browser can do it without repainting the text) */
 .hero .wrap{
   transform:translateY(calc(var(--p,0) * 34vh)) scale(calc(1 - var(--p,0) * .1));
   opacity:calc(1 - var(--p,0) * 1.5);
-  filter:blur(calc(var(--p,0) * 14px));
   transform-origin:30% 0;
 }
 /* narrow screens: the text fills the viewport, so the terrain gets its own band
@@ -261,6 +264,12 @@ footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
   .item{grid-template-columns:1fr;gap:4px}
   .sec-head{gap:10px}
 }
+
+/* lite mode (set by js/main.js on slow devices): drop the effects that cost
+   the most to paint: blur on reveals, the frosted nav, film grain, the lens */
+.lite.js .r{filter:none;transition:opacity .7s var(--ease),transform .9s var(--ease);transition-delay:calc(var(--i,0) * 70ms)}
+.lite nav.solid{background:rgba(0,0,0,.92);backdrop-filter:none;-webkit-backdrop-filter:none}
+.lite body::after,.lite #lens{display:none}
 
 @media (prefers-reduced-motion: reduce){
   *,*::before,*::after{animation:none!important;transition:none!important}
