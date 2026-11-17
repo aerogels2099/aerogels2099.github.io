@@ -3,7 +3,7 @@
   --ink:#F2F0EB;
   --soft:#A3A19C;
   --dim:#6E6C68;
-  --accent:#FF5A1F;
+  --accent:#FFFFFF;
   --line:rgba(255,255,255,.12);
   --serif:'Instrument Serif', Georgia, serif;
   --sans:'Instrument Sans', -apple-system, 'Segoe UI', sans-serif;
@@ -60,7 +60,31 @@ nav a:hover,nav a.on{color:var(--ink)}
 @media(hover:none){.sound,.aside{display:none}}
 
 /* fixed section marker, bottom-left: the label rolls over when the section changes */
-.marker{position:fixed;left:28px;bottom:26px;z-index:9;font-size:13px;color:var(--soft);
+/* lens cursor: a white disc that follows the pointer and inverts whatever is
+   under it; it swells over links and headings (js/main.js) */
+#lens{position:fixed;left:0;top:0;width:22px;height:22px;margin:-11px 0 0 -11px;border-radius:50%;
+  background:#fff;mix-blend-mode:difference;pointer-events:none;z-index:40;opacity:0;transition:opacity .4s;
+  will-change:transform}
+#lens.on{opacity:1}
+@media(hover:none){#lens{display:none}}
+
+/* a band of oversized type between sections; it drifts on its own and is
+   pushed and slanted by scroll speed (js/main.js) */
+.marquee{overflow:hidden;padding-top:clamp(72px,13vh,130px)}
+.marquee-track{display:flex;width:max-content;will-change:transform}
+.marquee span{font-family:var(--serif);font-size:clamp(64px,12vw,172px);line-height:1;letter-spacing:-.02em;
+  white-space:nowrap;padding-right:.5em}
+.marquee span:nth-child(odd){color:transparent;-webkit-text-stroke:1px rgba(255,255,255,.8)}
+.marquee span:nth-child(even){font-style:italic}
+
+/* the skills section flips to black-on-white: a white layer in difference
+   blend inverts everything beneath it, and it opens as a circle driven by
+   scroll (--ir radius, --iy centre, set in js/main.js) */
+#skills{position:relative;margin-top:clamp(64px,11vh,120px);padding-bottom:clamp(72px,13vh,130px)}
+.invert{position:absolute;inset:0;background:#fff;mix-blend-mode:difference;pointer-events:none;
+  clip-path:circle(var(--ir,150%) at 50% var(--iy,50%))}
+
+.marker{position:fixed;left:28px;bottom:26px;z-index:9;font-size:13px;color:var(--soft);mix-blend-mode:difference;
   display:flex;gap:10px;overflow:hidden;opacity:0;transition:opacity .4s}
 .marker.show{opacity:1}
 .marker span{display:block;transition:transform .3s var(--ease),opacity .3s}
@@ -241,5 +265,5 @@ footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
 @media (prefers-reduced-motion: reduce){
   *,*::before,*::after{animation:none!important;transition:none!important}
   html{scroll-behavior:auto}
-  .sound,.aside{display:none}
+  .sound,.aside,#lens{display:none}
 }

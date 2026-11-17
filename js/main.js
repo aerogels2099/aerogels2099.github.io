@@ -87,6 +87,8 @@ const nav = document.querySelector('nav');
 const marker = document.getElementById('marker');
 const [mNum, mName] = marker.children;
 const sections = $$('main section');
+const skills = document.getElementById('skills');
+const inverter = skills.querySelector('.invert');
 const links = $$('.nav-links a');
 
 let heroP = 0, endQ = 0, current = null, lastY = scrollY, vel = 0, energy = 0, swapTimer = 0;
@@ -98,6 +100,16 @@ function readScroll() {
   endQ = clamp(1 - (maxY - y) / (vh * 0.8));
   if (!reduced) hero.style.setProperty('--p', heroP.toFixed(3));
   nav.classList.toggle('solid', y > vh * 0.6);
+
+  /* skills inversion: the circle opens as the section rises into view and
+     closes again as it leaves, centred on the middle of the screen */
+  if (!reduced) {
+    const st = skills.offsetTop - y, sh = skills.offsetHeight;
+    let k = Math.min(clamp((vh * 0.62 - st) / (vh * 0.6)), clamp((st + sh - vh * 0.38) / (vh * 0.6)));
+    k = k * k;
+    inverter.style.setProperty('--ir', (k * Math.hypot(skills.offsetWidth, sh)).toFixed(1) + 'px');
+    inverter.style.setProperty('--iy', clamp(vh / 2 - st, 0, sh).toFixed(1) + 'px');
+  }
 
   let now = -1;
   sections.forEach((s, i) => { if (s.offsetTop - y <= vh * 0.45) now = i; });
@@ -270,6 +282,8 @@ if (!reduced && canHover) {
     if (e.pointerType === 'touch') return;
     const x = e.clientX, y = e.clientY;
     ptx = x; pty = y; pkTarget = 1;
+    if (!lensOn) { lensOn = true; lx = x; ly = y; lens.classList.add('on'); }
+    kick();
     /* a divider is plucked when the pointer passes through it */
     if (prevY !== null && y !== prevY) {
       waves.forEach((wv, idx) => {
@@ -285,6 +299,22 @@ if (!reduced && canHover) {
     prevY = y;
   }, { passive: true });
   document.documentElement.addEventListener('pointerleave', () => { pkTarget = 0; });
+  /* the lens swells over things worth a closer look */
+  addEventListener('pointerover', e => {
+    const el = e.target.closest ? e.target : null;
+    lsTarget = !el ? 1 : el.closest('a, button') ? 2.6 : el.closest('h1, h2, .skill p, .marquee') ? 6 : 1;
+    kick();
+  }, { passive: true });
+}
+
+/* lens cursor + marquee state (both advanced in the frame loop) */
+const lens = document.getElementById('lens');
+let lensOn = false, lx = 0, ly = 0, ls = 1, lsTarget = 1;
+const track = document.querySelector('.marquee-track');
+let marqX = 0, marqHalf = 0, marqOn = false, skew = 0;
+if (!reduced) {
+  track.innerHTML += track.innerHTML;   // second copy so the loop is seamless
+  new IntersectionObserver(es => { marqOn = es[es.length - 1].isIntersecting; kick(); }).observe(track.parentElement);
 }
 
 /* ---------- 6. project figures ---------- */
@@ -400,6 +430,7 @@ function resize() {
   rctx.setTransform(DPR, 0, 0, DPR, 0, 0);
   ys = new Float32Array(Math.floor(W / STEP) + 2);
   waves.forEach(fit); figs.forEach(fit);
+  marqHalf = track.scrollWidth / 2 || 1;
   anchorHero = docBottom(document.querySelector('.hero .links'));
   anchorEnd = docBottom(document.querySelector('.contact .links'));
   wavesDirty = true;
@@ -427,7 +458,20 @@ function frame(now) {
     if (energy > 0) wavesDirty = true;
   }
 
-  running = !reduced && (ridgeLive || figsLive || energy > 0 || wavesDirty || ringing);
+  let lensLive = false;
+  if (lensOn) {
+    lx += (ptx - lx) * 0.2; ly += (pty - ly) * 0.2; ls += (lsTarget - ls) * 0.14;
+    lens.style.transform = `translate(${lx.toFixed(1)}px,${ly.toFixed(1)}px) scale(${ls.toFixed(3)})`;
+    lensLive = Math.abs(ptx - lx) + Math.abs(pty - ly) > 0.3 || Math.abs(lsTarget - ls) > 0.01;
+  }
+  if (marqOn) {
+    skew += (clamp(vel * 0.35, -14, 14) - skew) * 0.15;
+    marqX -= 45 * dt + vel * 0.8;
+    marqX = ((marqX % marqHalf) - marqHalf) % marqHalf;   // keep within one copy's width, either direction
+    track.style.transform = `translateX(${marqX.toFixed(1)}px) skewX(${(-skew).toFixed(2)}deg)`;
+  }
+
+  running = !reduced && (ridgeLive || figsLive || lensLive || marqOn || energy > 0 || wavesDirty || ringing);
   if (running) requestAnimationFrame(frame);
 }
 function kick() {
